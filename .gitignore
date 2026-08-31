@@ -1,0 +1,9 @@
+```text
+# Laravel
+api-gestion-usuarios/.env
+api-gestion-usuarios/vendor/
+
+# React
+frontend-api-usuarios/node_modules/
+frontend-api-usuarios/dist/
+```
