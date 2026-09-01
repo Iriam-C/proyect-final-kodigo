@@ -15,11 +15,18 @@ function Dashboard() {
 
     const cargarUsuarios = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const respuesta = await api('/usuarios');
 
-            const respuesta = await api.get('/usuarios', {headers: {Authorization: `Bearer ${token}`}});
+            const datos = await respuesta.json();
 
-            setUsuarios(respuesta.data.usuarios);} catch (error) {console.error('Error cargando usuarios:', error);
+            if (!respuesta.ok) {
+                throw new Error('No se pudieron cargar los usuarios');
+            }
+
+            setUsuarios(datos.usuarios);
+
+        } catch (error) {
+            console.error('Error cargando usuarios:', error);
             setMensaje('No se pudieron cargar los usuarios');
         }
     };
@@ -44,23 +51,48 @@ function Dashboard() {
     const guardarUsuario = async (e) => {e.preventDefault();
 
         try {
-            const token = localStorage.getItem('token');
-            const headers = {Authorization: `Bearer ${token}`};
-
+            
             if (idEditando) {
-                await api.put(`/usuarios/${idEditando}`, {name: form.name, apellido: form.apellido, email: form.email}, { headers });
 
-                setMensaje('Usuario actualizado correctamente');
-            } else {
-                await api.post('/usuarios', form, { headers });
-                setMensaje('Usuario creado correctamente');
-            }
+            const respuesta = await api(`/usuarios/${idEditando}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: form.name,
+                    apellido: form.apellido,
+                    email: form.email
+                })
+            });
 
+    const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.message || 'Ocurrió un error al actualizar');
+        }
+
+        setMensaje('Usuario actualizado correctamente');
+
+        } else {
+
+        const respuesta = await api('/usuarios', {
+            method: 'POST',
+            body: JSON.stringify(form)
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.message || 'Ocurrió un error al crear');
+        }
+
+        setMensaje('Usuario creado correctamente');
+
+        }
             cerrarModal();
             cargarUsuarios();
         } 
+
         catch (error) {console.error('Error en la petición:', error);
-            setMensaje(error.response?.data?.message ||'Ocurrió un error al guardar');
+            setMensaje(error.message || 'Ocurrió un error al guardar');
         }
     };
 
@@ -70,17 +102,28 @@ function Dashboard() {
         if (!confirmar) return;
 
         try {
-            const token = localStorage.getItem('token');
+            const respuesta = await api(`/usuarios/${id}`, {
+                method: 'DELETE'
+            });
 
-            await api.delete(`/usuarios/${id}`, {headers: {Authorization: `Bearer ${token}`}});
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(datos.message || 'No se pudo eliminar');
+            }
 
             setMensaje('Usuario eliminado correctamente');
             cargarUsuarios();
-        } 
-        catch (error) {setMensaje(error.response?.data?.message ||'No se pudo eliminar');}
+
+        } catch (error) {
+            setMensaje(error.message || 'No se pudo eliminar');
+        }
+
     };
 
-    const cerrarSesion = () => {localStorage.removeItem('token'); navigate('/login');};
+        const cerrarSesion = () => {localStorage.removeItem('token'); navigate('/login');
+    
+    };
 
     return (
         <div className="min-vh-100 bg-light d-flex flex-column">
@@ -179,4 +222,6 @@ function Dashboard() {
     );
 }
 
-export default Dashboard;
+export default Dashboard;   
+
+

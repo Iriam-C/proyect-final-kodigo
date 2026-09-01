@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     // Listar todos los usuarios
     public function index()
     {
-        $usuarios = User::all();
+        $usuarios = DB::table('users')->get();
 
         return response()->json([
             'usuarios' => $usuarios
@@ -21,7 +21,7 @@ class UserController extends Controller
     // Mostrar un usuario específico
     public function show($id)
     {
-        $usuario = User::find($id);
+        $usuario = DB::table('users')->where('id', $id)->first();
 
         if (!$usuario) {
             return response()->json([
@@ -46,7 +46,16 @@ class UserController extends Controller
 
         $datos['password'] = Hash::make($datos['password']);
 
-        $usuario = User::create($datos);
+        $usuarioId = DB::table('users')->insertGetId([
+            'name' => $datos['name'],
+            'apellido' => $datos['apellido'],
+            'email' => $datos['email'],
+            'password' => $datos['password'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $usuario = DB::table('users')->where('id', $usuarioId)->first();
 
         return response()->json([
             'message' => 'Usuario creado correctamente',
@@ -57,7 +66,7 @@ class UserController extends Controller
     // Actualizar un usuario
     public function update(Request $request, $id)
     {
-        $usuario = User::find($id);
+        $usuario = DB::table('users')->where('id', $id)->first();
 
         if (!$usuario) {
             return response()->json([
@@ -76,7 +85,11 @@ class UserController extends Controller
             $datos['password'] = Hash::make($datos['password']);
         }
 
-        $usuario->update($datos);
+        $datos['updated_at'] = now();
+
+        DB::table('users')->where('id', $id)->update($datos);
+
+        $usuario = DB::table('users')->where('id', $id)->first();
 
         return response()->json([
             'message' => 'Usuario actualizado correctamente',
@@ -87,7 +100,7 @@ class UserController extends Controller
     // Eliminar un usuario
     public function destroy($id)
     {
-        $usuario = User::find($id);
+        $usuario = DB::table('users')->where('id', $id)->first();
 
         if (!$usuario) {
             return response()->json([
@@ -95,7 +108,7 @@ class UserController extends Controller
             ], 404);
         }
 
-        $usuario->delete();
+        DB::table('users')->where('id', $id)->delete();
 
         return response()->json([
             'message' => 'Usuario eliminado correctamente'
@@ -106,18 +119,22 @@ class UserController extends Controller
     {
         $hoy = now();
 
-        $porDia = User::whereDate('created_at', $hoy->toDateString())->count();
+        $porDia = DB::table('users')
+        ->whereDate('created_at', $hoy->toDateString())->count();
 
-        $porSemana = User::whereBetween('created_at', [
-            $hoy->copy()->startOfWeek(),
-            $hoy->copy()->endOfWeek()
-        ])->count();
+        $porSemana = DB::table('users')
+            ->whereBetween('created_at', [
+                $hoy->copy()->startOfWeek(),
+                $hoy->copy()->endOfWeek()
+            ])->count();
 
-        $porMes = User::whereMonth('created_at', $hoy->month)
+        $porMes = DB::table('users')
+            ->whereMonth('created_at', $hoy->month)
             ->whereYear('created_at', $hoy->year)
             ->count();
-
-        return response()->json([
+        
+       
+       return response()->json([
             'usuarios_registrados' => [
                 'hoy' => $porDia,
                 'esta_semana' => $porSemana,

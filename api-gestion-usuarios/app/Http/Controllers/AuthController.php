@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -18,12 +19,16 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $usuario = User::create([
+        $usuarioId = DB::table('users')->insertGetId([
             'name' => $datos['name'],
             'apellido' => $datos['apellido'],
             'email' => $datos['email'],
             'password' => Hash::make($datos['password']),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        $usuario = User::find($usuarioId);
 
         $token = $usuario->createToken('api-token')->plainTextToken;
 
@@ -42,13 +47,15 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $usuario = User::where('email', $datos['email'])->first();
+        $usuarioDatos = DB::table('users')->where('email', $datos['email'])->first();
 
-        if (!$usuario || !Hash::check($datos['password'], $usuario->password)) {
+        if (!$usuarioDatos || !Hash::check($datos['password'], $usuarioDatos->password)) {
             return response()->json([
                 'message' => 'Credenciales incorrectas'
             ], 401);
         }
+
+        $usuario = User::find($usuarioDatos->id);
 
         $token = $usuario->createToken('api-token')->plainTextToken;
 

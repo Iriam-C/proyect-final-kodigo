@@ -16,17 +16,34 @@ function Registro() {
         setMensaje('');
 
         try {
-            await api.post('/register', {name: nombre, apellido, email,password});
+
+            const respuesta = await api('/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: nombre,
+                    apellido,
+                    email,
+                    password
+                })
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(datos.message || 'No se pudo crear el usuario');
+            }
 
             setMensaje('Usuario creado correctamente');
 
-            setTimeout(() => {navigate('/login'); }, 1000);
+            setTimeout(() => {navigate('/login');}, 1000);
 
-        } 
+        }
         catch (error) {
+
             console.error('Error al registrar usuario:', error);
 
-            setMensaje(error.response?.data?.message ||'No se pudo crear el usuario');
+            setMensaje(error.message || 'No se pudo crear el usuario');
+
         }
     };
 
