@@ -33,12 +33,16 @@ function Registro() {
                 throw new Error(datos.message || 'No se pudo crear el usuario');
             }
 
+            localStorage.setItem('token', datos.token);
+            localStorage.setItem('usuario', JSON.stringify(datos.usuario));
+
             setMensaje('Usuario creado correctamente');
 
-            setTimeout(() => {navigate('/login');}, 1000);
-
-        }
-        catch (error) {
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 1000);
+            
+        } catch (error) {
 
             console.error('Error al registrar usuario:', error);
 

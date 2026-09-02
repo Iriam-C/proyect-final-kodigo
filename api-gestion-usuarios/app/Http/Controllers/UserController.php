@@ -50,7 +50,7 @@ class UserController extends Controller
             ->where('id', $request->user()->id)
             ->value('role_id');
 
-        if ($rolId != 1) {
+        if (!in_array($rolId, [4, 5])) {
             return response()->json([
                 'message' => 'No tienes permisos para crear usuarios'
             ], 403);
@@ -70,6 +70,7 @@ class UserController extends Controller
             'apellido' => $datos['apellido'],
             'email' => $datos['email'],
             'password' => $datos['password'],
+            'role_id' => 3,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -89,7 +90,7 @@ class UserController extends Controller
             ->where('id', $request->user()->id)
             ->value('role_id');
 
-        if (!in_array($rolId, [1, 2])) {
+        if (!in_array($rolId, [4, 5])) {
             return response()->json([
                 'message' => 'No tienes permisos para editar usuarios'
             ], 403);
@@ -133,7 +134,7 @@ class UserController extends Controller
             ->where('id', request()->user()->id)
             ->value('role_id');
 
-        if ($rolId != 1) {
+        if ($rolId != 4) {
             return response()->json([
                 'message' => 'No tienes permisos para eliminar usuarios'
             ], 403);

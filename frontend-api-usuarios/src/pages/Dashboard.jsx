@@ -4,6 +4,7 @@ import api from '../services/api';
 
 function Dashboard() {
     const [usuarios, setUsuarios] = useState([]);
+    const [rolActual, setRolActual] = useState('');
     const [mensaje, setMensaje] = useState('');
     const [form, setForm] = useState({name: '', apellido: '', email: '', password: ''});
     const [idEditando, setIdEditando] = useState(null);
@@ -11,7 +12,15 @@ function Dashboard() {
 
     const navigate = useNavigate();
 
-    useEffect(() => {cargarUsuarios();}, []);
+    useEffect(() => {
+        const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+
+        if (usuarioGuardado) {
+            setRolActual(usuarioGuardado.rol);
+        }
+
+        cargarUsuarios();
+        }, []);
 
     const cargarUsuarios = async () => {
         try {
@@ -121,9 +130,19 @@ function Dashboard() {
 
     };
 
-        const cerrarSesion = () => {localStorage.removeItem('token'); navigate('/login');
-    
-    };
+        const cerrarSesion = async () => {
+            try {
+                await api('/logout', {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            } finally {
+                localStorage.removeItem('token');
+                localStorage.removeItem('usuario');
+                navigate('/login');
+            }
+        };
 
     return (
         <div className="min-vh-100 bg-light d-flex flex-column">
@@ -136,9 +155,19 @@ function Dashboard() {
             <div className="container px-4 py-5 flex-grow-1">
                 {mensaje && (<div className="alert alert-info py-2 small mb-4">{mensaje}</div>)}
 
+                <div className="alert alert-light border mb-4">
+                    <strong>Rol del usuario:</strong> {rolActual === 'usuario' ? 'lector' : rolActual}
+                </div>
+
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="fw-bold text-dark mb-0">Lista de usuarios</h2>
-                    <button type="button" className="btn btn-primary px-4 fw-semibold shadow-sm" onClick={abrirModalCrear}>Nuevo usuario</button>
+
+                    {(rolActual === 'admin' || rolActual === 'editor') &&(
+
+                        <button type="button" className="btn btn-primary px-4 fw-semibold shadow-sm" onClick={abrirModalCrear}>Nuevo usuario</button>
+                
+                    )}  
+
                 </div>
 
                 <div className="card border-0 shadow-sm rounded-3 p-4">
@@ -162,9 +191,16 @@ function Dashboard() {
                                     <td>{usuario.rol}</td>
                                     <td className="text-end">
 
-                                        <button type="button" className="btn btn-sm btn-outline-primary me-2 px-3" onClick={() => abrirModalEditar(usuario)}>Editar</button>
-                                        
-                                        <button type="button" className="btn btn-sm btn-outline-danger px-3" onClick={() => eliminarUsuario(usuario.id)}>Eliminar</button>
+                                        {(rolActual === 'admin' || rolActual === 'editor') && (
+                                            
+                                            <button type="button" className="btn btn-sm btn-outline-primary me-2 px-3" onClick={() => abrirModalEditar(usuario)}>Editar</button>
+                                        )}
+
+                                        {rolActual === 'admin' && (
+
+                                            <button type="button" className="btn btn-sm btn-outline-danger px-3" onClick={() => eliminarUsuario(usuario.id)}>Eliminar</button>
+                                        )}
+
                                     </td>
                                 </tr>
                                     ))}

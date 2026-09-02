@@ -30,6 +30,7 @@ function Login() {
             }
 
             localStorage.setItem('token', datos.token);
+            localStorage.setItem('usuario', JSON.stringify(datos.usuario));
 
             navigate('/dashboard');
 
@@ -81,7 +82,7 @@ function Login() {
                     <div className="text-center mt-4 pt-3 border-top">
                         <span className="text-muted small">¿No tienes una cuenta?{' '}</span>
                         <button type="button" className="btn btn-link p-0 small fw-semibold text-decoration-none" onClick={() => navigate('/registro')}>
-                            Crear usuario
+                            Crear cuenta
                         </button>
                     </div>
                 </div>

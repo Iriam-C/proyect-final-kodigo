@@ -24,7 +24,7 @@ class AuthController extends Controller
             'apellido' => $datos['apellido'],
             'email' => $datos['email'],
             'password' => Hash::make($datos['password']),
-            'role_id' => 3,
+            'role_id' => 6,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -33,9 +33,21 @@ class AuthController extends Controller
 
         $token = $usuario->createToken('api-token')->plainTextToken;
 
+        $usuarioInfo = DB::table('users')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select(
+                'users.id',
+                'users.name',
+                'users.apellido',
+                'users.email',
+                'roles.nombre as rol'
+            )
+            ->where('users.id', $usuario->id)
+            ->first();
+
         return response()->json([
             'message' => 'Usuario registrado correctamente',
-            'usuario' => $usuario,
+            'usuario' => $usuarioInfo,
             'token' => $token,
         ], 201);
     }
@@ -60,9 +72,21 @@ class AuthController extends Controller
 
         $token = $usuario->createToken('api-token')->plainTextToken;
 
+        $usuarioInfo = DB::table('users')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select(
+                'users.id',
+                'users.name',
+                'users.apellido',
+                'users.email',
+                'roles.nombre as rol'
+            )
+            ->where('users.id', $usuario->id)
+            ->first();
+
         return response()->json([
             'message' => 'Inicio de sesión exitoso',
-            'usuario' => $usuario,
+            'usuario' => $usuarioInfo,
             'token' => $token,
         ]);
     }
