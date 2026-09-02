@@ -18,7 +18,7 @@ function App() {
                     path="/dashboard"
                     element={
                         <RutaProtegida>
-                            <Dashboard />
+                        <Dashboard/>
                         </RutaProtegida>
                     }
                 />

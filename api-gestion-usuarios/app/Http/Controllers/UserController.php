@@ -11,7 +11,16 @@ class UserController extends Controller
     // Listar todos los usuarios
     public function index()
     {
-        $usuarios = DB::table('users')->get();
+        $usuarios = DB::table('users')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select(
+                'users.id',
+                'users.name',
+                'users.apellido',
+                'users.email',
+                'roles.nombre as rol'
+            )
+            ->get();
 
         return response()->json([
             'usuarios' => $usuarios
@@ -37,6 +46,16 @@ class UserController extends Controller
     // Crear un usuario
     public function store(Request $request)
     {
+        $rolId = DB::table('users')
+            ->where('id', $request->user()->id)
+            ->value('role_id');
+
+        if ($rolId != 1) {
+            return response()->json([
+                'message' => 'No tienes permisos para crear usuarios'
+            ], 403);
+        }
+
         $datos = $request->validate([
             'name' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -66,6 +85,16 @@ class UserController extends Controller
     // Actualizar un usuario
     public function update(Request $request, $id)
     {
+        $rolId = DB::table('users')
+            ->where('id', $request->user()->id)
+            ->value('role_id');
+
+        if (!in_array($rolId, [1, 2])) {
+            return response()->json([
+                'message' => 'No tienes permisos para editar usuarios'
+            ], 403);
+        }
+    
         $usuario = DB::table('users')->where('id', $id)->first();
 
         if (!$usuario) {
@@ -100,6 +129,16 @@ class UserController extends Controller
     // Eliminar un usuario
     public function destroy($id)
     {
+        $rolId = DB::table('users')
+            ->where('id', request()->user()->id)
+            ->value('role_id');
+
+        if ($rolId != 1) {
+            return response()->json([
+                'message' => 'No tienes permisos para eliminar usuarios'
+            ], 403);
+        }
+        
         $usuario = DB::table('users')->where('id', $id)->first();
 
         if (!$usuario) {

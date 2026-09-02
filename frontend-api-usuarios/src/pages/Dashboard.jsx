@@ -149,6 +149,7 @@ function Dashboard() {
                             <tr>
                                 <th>Nombre completo</th>
                                 <th>Correo electrónico</th>
+                                <th>Rol</th>
                                 <th className="text-end">Acciones</th>
                             </tr>
                           </thead>
@@ -158,6 +159,7 @@ function Dashboard() {
                                 <tr key={usuario.id}>
                                     <td className="fw-semibold">{usuario.name} {usuario.apellido}</td>
                                     <td className="text-muted small">{usuario.email}</td>
+                                    <td>{usuario.rol}</td>
                                     <td className="text-end">
 
                                         <button type="button" className="btn btn-sm btn-outline-primary me-2 px-3" onClick={() => abrirModalEditar(usuario)}>Editar</button>
